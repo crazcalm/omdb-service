@@ -1,0 +1,18 @@
+[package]
+name = "omdb_service"
+version = "0.1.0"
+authors = ["Marcus Willock <crazcalm@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+tokio = {version = "1", features = ["full"]}
+warp = "0.3"
+serde = "1.0"
+serde_json = "1.0"
+serde_derive = "1.0"
+dotenv = "0.15"
+rusqlite = {version = "0.25", features = ["bundled-full"]}
+json_env_logger = "0.1"
+log = ">=0.4.13, < 0.4.14"
