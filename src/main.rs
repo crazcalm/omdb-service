@@ -7,6 +7,14 @@ use std::env;
 
 #[tokio::main]
 async fn main() {
+    // Ensure that a log level is set
+    if env::var("RUST_LOG").is_err() {
+        env::set_var("RUST_LOG", "info");
+    };
+
+    // intialize json logger
+    json_env_logger::init();
+
     // Ensure that an environment is setup
     if env::var("ENV").is_err() {
         env::set_var("ENV", "local");
