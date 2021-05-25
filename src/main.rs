@@ -1,3 +1,4 @@
+mod api;
 mod config;
 mod handlers;
 mod models;
@@ -26,7 +27,9 @@ async fn main() {
     config::load_config(environment).await.unwrap();
 
     // Setup the routes
-    let api = routes::health::register();
+    let application_api = api::register();
 
-    warp::serve(api).run(([127, 0, 0, 1], 3030)).await;
+    warp::serve(application_api)
+        .run(([127, 0, 0, 1], 3030))
+        .await;
 }
