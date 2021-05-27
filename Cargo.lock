@@ -633,6 +633,7 @@ dependencies = [
 name = "omdb_service"
 version = "0.1.0"
 dependencies = [
+ "chrono",
  "dotenv",
  "json_env_logger",
  "log",
