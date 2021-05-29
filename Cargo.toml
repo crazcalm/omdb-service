@@ -17,3 +17,4 @@ rusqlite = {version = "0.25", features = ["bundled-full"]}
 json_env_logger = "0.1"
 log = ">=0.4.13, < 0.4.14"
 chrono = "0.4"
+kv-log-macro = "1.0.7"

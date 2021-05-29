@@ -1,9 +1,19 @@
 use chrono::prelude::*;
 use std::collections::HashMap;
 
+use std::sync::Arc;
+use tokio::sync::Mutex;
+
+pub type AppCache = Arc<Mutex<Cache>>;
+
+pub struct CacheReturn {
+    pub key: String,
+    pub value: CacheItem,
+}
+
 #[derive(Debug, Clone)]
-struct CacheItem {
-    result: String,
+pub struct CacheItem {
+    result: serde_json::Value,
     date: DateTime<Utc>,
 }
 
@@ -20,11 +30,11 @@ impl Cache {
         }
     }
 
-    pub fn len(self) -> usize {
-        self.size
+    pub fn new_app_cache(size: usize) -> AppCache {
+        Arc::new(Mutex::new(Cache::new(size)))
     }
 
-    pub fn check(&self, key: String) -> Option<String> {
+    pub fn check(&self, key: String) -> Option<serde_json::Value> {
         let result = self.items.get(key.as_str());
 
         match result {
@@ -33,14 +43,14 @@ impl Cache {
         }
     }
 
-    pub fn add(&mut self, key: String, result: String) -> Option<String> {
-        let mut return_value: Option<String> = None;
+    pub fn add<T: serde::Serialize>(&mut self, key: String, result: T) -> Option<CacheReturn> {
+        let mut return_value: Option<CacheReturn> = None;
 
         self.items.insert(
             key,
             CacheItem {
                 date: Utc::now(),
-                result,
+                result: serde_json::json!(result),
             },
         );
 
@@ -63,9 +73,10 @@ impl Cache {
 
             // removing the excess item
             if result_key.is_some() {
-                let cached_item = self.items.remove(result_key.unwrap().as_str());
+                let key = result_key.unwrap();
+                let value = self.items.remove(&key).unwrap();
 
-                return_value = Some(cached_item.unwrap().result.clone());
+                return_value = Some(CacheReturn { key, value });
             }
         }
 
@@ -77,22 +88,28 @@ impl Cache {
 mod tests {
     use crate::cache;
 
-    fn test_cache_size() {
+    #[tokio::test]
+    async fn test_cache_size() {
         let mut cache = cache::Cache::new(3);
 
         let one = cache.add("one".to_string(), "1".to_string());
-        assert_eq!(one, None);
+        assert_eq!(one.is_none(), true);
 
         let two = cache.add("two".to_string(), "2".to_string());
-        assert_eq!(two, None);
+        assert_eq!(two.is_none(), true);
 
         let three = cache.add("three".to_string(), "3".to_string());
-        assert_eq!(three, None);
+        assert_eq!(three.is_none(), true);
 
         let four = cache.add("four".to_string(), "4".to_string());
-        assert_eq!(four, Some("1".to_string()));
+        assert_eq!(four.is_some(), true);
+        assert_eq!(four.unwrap().value.result, "1".to_string());
 
         let five = cache.add("five".to_string(), "5".to_string());
-        assert_eq!(five, Some("five".to_string()));
+        assert_eq!(five.is_some(), true);
+        assert_eq!(
+            five.unwrap().value.result,
+            serde_json::json!("2".to_string())
+        );
     }
 }

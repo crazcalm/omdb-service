@@ -27,8 +27,10 @@ async fn main() {
 
     config::load_config(environment).await.unwrap();
 
+    // Initialize cache
+    let result_cache = cache::Cache::new_app_cache(10);
     // Setup the routes
-    let application_api = api::register();
+    let application_api = api::register(result_cache);
 
     warp::serve(application_api)
         .run(([127, 0, 0, 1], 3030))

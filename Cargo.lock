@@ -636,6 +636,7 @@ dependencies = [
  "chrono",
  "dotenv",
  "json_env_logger",
+ "kv-log-macro",
  "log",
  "rusqlite",
  "serde",
