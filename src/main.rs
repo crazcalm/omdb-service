@@ -28,7 +28,7 @@ async fn main() {
     config::load_config(environment).await.unwrap();
 
     // Initialize cache
-    let result_cache = cache::Cache::new_app_cache(10);
+    let result_cache = cache::Cache::new_app_cache(200);
     // Setup the routes
     let application_api = api::register(result_cache);
 

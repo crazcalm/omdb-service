@@ -36,20 +36,11 @@ pub async fn media_info(name: String, app_cache: AppCache) -> Result<impl warp::
             Ok(warp::reply::json(&result))
         }
     }
-
-    /*
-    let dummy_data = dummy_function(name).await;
-
-    let warp_reply = warp::reply::json(&dummy_data);
-
-    Ok(warp_reply)
-
-    */
 }
 
 async fn dummy_function(name: String) -> IMDBScore {
     IMDBScore {
-        name: "name".clone().to_string(),
+        name: name.clone().to_string(),
         score: format!("{} + score", name),
     }
 }
