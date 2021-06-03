@@ -18,3 +18,4 @@ json_env_logger = "0.1"
 log = ">=0.4.13, < 0.4.14"
 chrono = "0.4"
 kv-log-macro = "1.0.7"
+omdb = { git = "https://github.com/crazcalm/omdb-rs.git", rev = "7475d916841152c88b7df245bb7459d2a1b18a1a"}

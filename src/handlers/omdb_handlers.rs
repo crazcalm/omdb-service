@@ -1,13 +1,15 @@
 use crate::cache::AppCache;
-use kv_log_macro::info;
+use kv_log_macro::{info, warn};
+use omdb;
 use serde_derive::{Deserialize, Serialize};
 use serde_json;
 use std::convert::Infallible;
+use std::env;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct IMDBScore {
     name: String,
-    score: String,
+    imdb_score: String,
 }
 
 pub async fn media_info(name: String, app_cache: AppCache) -> Result<impl warp::Reply, Infallible> {
@@ -39,8 +41,22 @@ pub async fn media_info(name: String, app_cache: AppCache) -> Result<impl warp::
 }
 
 async fn dummy_function(name: String) -> IMDBScore {
-    IMDBScore {
-        name: name.clone().to_string(),
-        score: format!("{} + score", name),
+    let api_key = env::var("OMDB_KEY").expect("'OMDB_KEY' was not loaded into the environment");
+
+    let show = omdb::title(&name).apikey(&api_key).get().await;
+
+    match show {
+        Ok(item) => IMDBScore {
+            name: name.clone().to_string(),
+            imdb_score: format!("{}", item.imdb_rating),
+        },
+        Err(err) => {
+            warn!("omdb error when searching for '{}': {}", &name, err);
+
+            IMDBScore {
+                name: name.clone().to_string(),
+                imdb_score: format!("Not Found"),
+            }
+        }
     }
 }
