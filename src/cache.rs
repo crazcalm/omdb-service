@@ -37,10 +37,7 @@ impl Cache {
     pub fn check(&self, key: String) -> Option<serde_json::Value> {
         let result = self.items.get(key.as_str());
 
-        match result {
-            Some(x) => Some(x.result.clone()),
-            None => None,
-        }
+        result.map(|x| x.result.clone())
     }
 
     pub fn add<T: serde::Serialize>(&mut self, key: String, result: T) -> Option<CacheReturn> {
@@ -60,20 +57,14 @@ impl Cache {
             let mut result_value: Option<&CacheItem> = None;
 
             for (key, value) in self.items.iter() {
-                if result_value.clone().is_none() {
+                if result_value.clone().is_none() || result_value.unwrap().date > value.date {
                     result_key = Some(key.to_string());
                     result_value = Some(value);
-                } else {
-                    if result_value.unwrap().date > value.date {
-                        result_key = Some(key.to_string());
-                        result_value = Some(value);
-                    }
                 }
             }
 
             // removing the excess item
-            if result_key.is_some() {
-                let key = result_key.unwrap();
+            if let Some(key) = result_key {
                 let value = self.items.remove(&key).unwrap();
 
                 return_value = Some(CacheReturn { key, value });

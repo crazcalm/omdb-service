@@ -1,4 +1,3 @@
-use dotenv;
 use std::path::Path;
 
 pub async fn load_config(env: String) -> Result<std::path::PathBuf, dotenv::Error> {

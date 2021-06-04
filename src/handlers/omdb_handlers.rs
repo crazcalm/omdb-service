@@ -1,8 +1,6 @@
 use crate::cache::AppCache;
 use kv_log_macro::{info, warn};
-use omdb;
 use serde_derive::{Deserialize, Serialize};
-use serde_json;
 use std::convert::Infallible;
 use std::env;
 
@@ -26,36 +24,34 @@ pub async fn media_info(name: String, app_cache: AppCache) -> Result<impl warp::
         None => {
             info!("Adding '{}' to the cache", &name);
 
-            let result = dummy_function(name.clone()).await;
+            let result = omdb_call(name.clone()).await;
             let remove_from_cache = local_cache.add(name.clone(), result.clone());
 
-            if remove_from_cache.is_some() {
-                let cache_item = remove_from_cache.unwrap();
-
+            if let Some(cache_item) = remove_from_cache {
                 info!("Dropping {} from the cache", cache_item.key);
-            }
+            };
 
             Ok(warp::reply::json(&result))
         }
     }
 }
 
-async fn dummy_function(name: String) -> IMDBScore {
+async fn omdb_call(name: String) -> IMDBScore {
     let api_key = env::var("OMDB_KEY").expect("'OMDB_KEY' was not loaded into the environment");
 
     let show = omdb::title(&name).apikey(&api_key).get().await;
 
     match show {
         Ok(item) => IMDBScore {
-            name: name.clone().to_string(),
-            imdb_score: format!("{}", item.imdb_rating),
+            name: name.clone(),
+            imdb_score: item.imdb_rating,
         },
         Err(err) => {
             warn!("omdb error when searching for '{}': {}", &name, err);
 
             IMDBScore {
-                name: name.clone().to_string(),
-                imdb_score: format!("Not Found"),
+                name: name.clone(),
+                imdb_score: "Not Found".to_string(),
             }
         }
     }
