@@ -53,22 +53,19 @@ impl Cache {
 
         // Still need to enforce size limit
         if self.items.len() > self.size {
-            let mut result_key: Option<String> = None;
-            let mut result_value: Option<&CacheItem> = None;
+            let key_to_remove = self
+                .items
+                .iter()
+                .reduce(|a, b| if a.1.date > b.1.date { b } else { a }) // compare CacheItem.date
+                .map(|result| result.0.clone()) // returns a clone of the key
+                .unwrap();
 
-            for (key, value) in self.items.iter() {
-                if result_value.clone().is_none() || result_value.unwrap().date > value.date {
-                    result_key = Some(key.to_string());
-                    result_value = Some(value);
-                }
-            }
+            let value = self.items.remove(key_to_remove.as_str()).unwrap();
 
-            // removing the excess item
-            if let Some(key) = result_key {
-                let value = self.items.remove(&key).unwrap();
-
-                return_value = Some(CacheReturn { key, value });
-            }
+            return_value = Some(CacheReturn {
+                key: key_to_remove,
+                value,
+            })
         }
 
         return_value
